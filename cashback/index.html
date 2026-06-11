@@ -48,6 +48,12 @@
             justify-content: center;
             gap: 8px;
         }
+        .shop img {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
         .shop:active { transform: scale(0.97); }
         .product {
             background: #f9f9fb;
@@ -97,7 +103,6 @@
             border-left-color: #ff3b30;
             background: #ffe6e5;
         }
-        /* Анимация карты – без картинки, просто текст+эмодзи */
         .card-animation {
             position: fixed;
             top: 50%;
@@ -115,6 +120,11 @@
             align-items: center;
             gap: 12px;
             white-space: nowrap;
+        }
+        .card-animation img {
+            width: 50px;
+            height: auto;
+            border-radius: 8px;
         }
         @keyframes fadeOut {
             0% { opacity: 1; transform: translate(-50%, -50%) scale(0.9); }
@@ -138,7 +148,7 @@
             <button class="shop" data-shop="supermarket">🛒 Супермаркет</button>
             <button class="shop" data-shop="electronics">💻 Техника</button>
             <button class="shop" data-shop="clothes">👕 Одежда</button>
-            <button class="shop" data-shop="dns">📱 ДНС</button>
+            <button class="shop" data-shop="dns">📱 ДНС <img src="dnsshop.jpg" alt="DNS"></button>
         </div>
     </div>
 
@@ -197,7 +207,7 @@
             { id: 3, name: "Кепка", price: 300, img: "https://cdn-icons-png.flaticon.com/512/3048/3048566.png" }
         ],
         dns: [
-            { id: 1, name: "iPhone 15 Pro", price: 1200, img: "https://cdn-icons-png.flaticon.com/512/1791/1791052.png" }
+            { id: 1, name: "iPhone 15 Pro", price: 1200, img: "iphone15pro.jpg" }
         ]
     };
 
@@ -219,9 +229,9 @@
     function animateCard() {
         const div = document.createElement('div');
         div.className = 'card-animation';
-        div.innerHTML = '💳 Оплата картой...';
+        div.innerHTML = '<img src="card.png" alt="card"> 💳 Оплата...';
         document.body.appendChild(div);
-        setTimeout(() => div.remove(), 800);
+        setTimeout(() => div.remove(), 1000);
     }
 
     function renderProducts() {
@@ -309,7 +319,6 @@
 
         animateCard();
 
-        // Симуляция оплаты и отмены
         gameState.balance -= totalPrice;
         let cashback = Math.floor(totalPrice * 0.1);
         gameState.totalCashback += cashback;
