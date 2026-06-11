@@ -137,7 +137,7 @@
             <button class="shop" data-shop="supermarket">🛒 Супермаркет</button>
             <button class="shop" data-shop="electronics">💻 Техника</button>
             <button class="shop" data-shop="clothes">👕 Одежда</button>
-            <button class="shop" data-shop="dns">📱 ДНС <img src="dnnshop.jpg" alt="DNS"></button>
+            <button class="shop" data-shop="dns">📱 ДНС <img src="https://cdn-icons-png.flaticon.com/512/5969/5969124.png" alt="DNS"></button>
         </div>
     </div>
 
@@ -161,7 +161,7 @@
         shopBan: { supermarket: 0, electronics: 0, clothes: 0, dns: 0 }
     };
 
-    // Список комментариев продавцов (влияют на риск)
+    // Комментарии продавцов
     const comments = {
         suspicious: [
             "🤨 Продавец прищурился: «Часто ты тут ходишь, странный какой-то...»",
@@ -197,7 +197,7 @@
             { id: 3, name: "Кепка", price: 300, img: "https://cdn-icons-png.flaticon.com/512/3048/3048566.png" }
         ],
         dns: [
-            { id: 1, name: "iPhone 15 Pro", price: 1200, img: "iphone15pro.jpg" }
+            { id: 1, name: "iPhone 15 Pro", price: 1200, img: "https://cdn-icons-png.flaticon.com/512/1791/1791052.png" }
         ]
     };
 
@@ -218,7 +218,7 @@
     function animateCard() {
         const div = document.createElement('div');
         div.className = 'card-animation';
-        div.innerHTML = `<img src="card.png" alt="card">`;
+        div.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/422/422134.png" alt="card">`;
         document.body.appendChild(div);
         setTimeout(() => div.remove(), 1100);
     }
@@ -241,7 +241,7 @@
             const div = document.createElement('div');
             div.className = 'product';
             div.innerHTML = `
-                <img src="${prod.img}" alt="${prod.name}" onerror="this.src='https://placehold.co/60x60'">
+                <img src="${prod.img}" alt="${prod.name}">
                 <div class="product-info">
                     <label>
                         <input type="checkbox" value="${prod.id}" ${isChecked ? 'checked' : ''} 
@@ -306,16 +306,15 @@
             return;
         }
 
-        // Анимация карты
-        animateCard();
+        animateCard();  // показываем анимацию карты
 
-        // Симуляция оплаты и отмены
+        // Оплата и отмена (кешбек остаётся)
         gameState.balance -= totalPrice;
         let cashback = Math.floor(totalPrice * 0.1);
         gameState.totalCashback += cashback;
-        gameState.balance += totalPrice; // отмена
+        gameState.balance += totalPrice; // возврат денег
 
-        // Риск и комментарий
+        // Расчёт риска и комментарий
         let risk = 0;
         let comment = "";
 
@@ -325,7 +324,6 @@
 
         // Выбираем случайный комментарий
         if (Math.random() < 0.4) {
-            // Подозрительный
             const arr = comments.suspicious;
             comment = arr[Math.floor(Math.random() * arr.length)];
             risk += 0.3;
