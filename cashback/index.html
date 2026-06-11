@@ -48,12 +48,6 @@
             justify-content: center;
             gap: 8px;
         }
-        .shop img {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
         .shop:active { transform: scale(0.97); }
         .product {
             background: #f9f9fb;
@@ -93,31 +87,38 @@
             margin: 12px 0;
             font-weight: 500;
             border-left: 4px solid #ffcc00;
+            transition: 0.2s;
         }
-        /* Анимация карты */
+        .message-area.success {
+            border-left-color: #34c759;
+            background: #e0f5e6;
+        }
+        .message-area.error {
+            border-left-color: #ff3b30;
+            background: #ffe6e5;
+        }
+        /* Анимация карты – без картинки, просто текст+эмодзи */
         .card-animation {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 220px;
-            background: rgba(0,0,0,0.8);
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            border-radius: 60px;
+            padding: 20px 30px;
+            font-size: 24px;
+            font-weight: bold;
             z-index: 1000;
-            animation: fadeOut 1s ease-out forwards;
+            animation: fadeOut 0.8s ease-out forwards;
             display: flex;
-            justify-content: center;
             align-items: center;
-        }
-        .card-animation img {
-            width: 180px;
-            border-radius: 12px;
+            gap: 12px;
+            white-space: nowrap;
         }
         @keyframes fadeOut {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.8); }
-            70% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.9); }
+            80% { opacity: 1; }
             100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1); visibility: hidden; }
         }
     </style>
@@ -137,7 +138,7 @@
             <button class="shop" data-shop="supermarket">🛒 Супермаркет</button>
             <button class="shop" data-shop="electronics">💻 Техника</button>
             <button class="shop" data-shop="clothes">👕 Одежда</button>
-            <button class="shop" data-shop="dns">📱 ДНС <img src="https://cdn-icons-png.flaticon.com/512/5969/5969124.png" alt="DNS"></button>
+            <button class="shop" data-shop="dns">📱 ДНС</button>
         </div>
     </div>
 
@@ -161,7 +162,6 @@
         shopBan: { supermarket: 0, electronics: 0, clothes: 0, dns: 0 }
     };
 
-    // Комментарии продавцов
     const comments = {
         suspicious: [
             "🤨 Продавец прищурился: «Часто ты тут ходишь, странный какой-то...»",
@@ -206,21 +206,22 @@
         document.getElementById('cashback').innerText = gameState.totalCashback;
     }
 
-    function showComment(comment) {
-        const commentDiv = document.getElementById('commentArea');
-        commentDiv.innerText = comment;
-        commentDiv.style.display = 'block';
+    function showMessage(text, type = 'info') {
+        const msgDiv = document.getElementById('commentArea');
+        msgDiv.innerText = text;
+        msgDiv.className = `message-area ${type}`;
+        msgDiv.style.display = 'block';
         setTimeout(() => {
-            commentDiv.style.display = 'none';
+            msgDiv.style.display = 'none';
         }, 3000);
     }
 
     function animateCard() {
         const div = document.createElement('div');
         div.className = 'card-animation';
-        div.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/422/422134.png" alt="card">`;
+        div.innerHTML = '💳 Оплата картой...';
         document.body.appendChild(div);
-        setTimeout(() => div.remove(), 1100);
+        setTimeout(() => div.remove(), 800);
     }
 
     function renderProducts() {
@@ -241,7 +242,7 @@
             const div = document.createElement('div');
             div.className = 'product';
             div.innerHTML = `
-                <img src="${prod.img}" alt="${prod.name}">
+                <img src="${prod.img}" alt="${prod.name}" onerror="this.src='https://placehold.co/60x60?text=📱'">
                 <div class="product-info">
                     <label>
                         <input type="checkbox" value="${prod.id}" ${isChecked ? 'checked' : ''} 
@@ -266,7 +267,7 @@
             if (total + price <= gameState.balance) {
                 gameState.chosenProducts.push(productId);
             } else {
-                alert("Недостаточно средств!");
+                showMessage("❌ Недостаточно средств!", "error");
                 renderProducts();
                 return;
             }
@@ -276,7 +277,7 @@
 
     function selectShop(shopName) {
         if (gameState.shopBan[shopName] >= 3) {
-            alert(`Вас выгнали из ${shopName} за махинации!`);
+            showMessage(`🚫 Вас выгнали из ${shopName} за махинации!`, "error");
             return;
         }
         gameState.selectedShop = shopName;
@@ -288,7 +289,7 @@
 
     function doPurchase() {
         if (!gameState.selectedShop) {
-            alert("Выберите магазин!");
+            showMessage("Сначала выберите магазин!", "error");
             return;
         }
         const products = shopProducts[gameState.selectedShop];
@@ -298,23 +299,22 @@
             if (p) totalPrice += p.price;
         }
         if (totalPrice === 0) {
-            alert("Выберите товары!");
+            showMessage("Выберите хотя бы один товар!", "error");
             return;
         }
         if (totalPrice > gameState.balance) {
-            alert("Не хватает денег!");
+            showMessage("Не хватает денег на балансе!", "error");
             return;
         }
 
-        animateCard();  // показываем анимацию карты
+        animateCard();
 
-        // Оплата и отмена (кешбек остаётся)
+        // Симуляция оплаты и отмены
         gameState.balance -= totalPrice;
         let cashback = Math.floor(totalPrice * 0.1);
         gameState.totalCashback += cashback;
-        gameState.balance += totalPrice; // возврат денег
+        gameState.balance += totalPrice;
 
-        // Расчёт риска и комментарий
         let risk = 0;
         let comment = "";
 
@@ -322,7 +322,6 @@
         if (gameState.shopBan[gameState.selectedShop] > 0) risk += 0.2;
         if (totalPrice > 500) risk += 0.2;
 
-        // Выбираем случайный комментарий
         if (Math.random() < 0.4) {
             const arr = comments.suspicious;
             comment = arr[Math.floor(Math.random() * arr.length)];
@@ -335,16 +334,16 @@
             comment = arr[Math.floor(Math.random() * arr.length)];
         }
 
-        showComment(comment);
+        showMessage(comment, "info");
 
         if (Math.random() < risk) {
             gameState.shopBan[gameState.selectedShop]++;
             let penalty = Math.floor(totalPrice * 0.5);
             gameState.balance -= penalty;
             if (gameState.balance < 0) gameState.balance = 0;
-            alert(`⚠️ Попался! Штраф ${penalty} руб. Баланс: ${gameState.balance}\n\n${comment}`);
+            showMessage(`⚠️ Попался! Штраф ${penalty} руб. Остаток: ${gameState.balance} руб.`, "error");
         } else {
-            alert(`✅ Успех! +${cashback} кешбека. Баланс: ${gameState.balance}\n\n${comment}`);
+            showMessage(`✅ Успех! +${cashback} кешбека. Баланс: ${gameState.balance} руб.`, "success");
         }
 
         updateUI();
@@ -353,7 +352,7 @@
         document.getElementById('productsPanel').style.display = 'none';
 
         if (gameState.balance <= 0) {
-            alert(`Игра окончена! Кешбек: ${gameState.totalCashback}`);
+            showMessage(`💀 Игра окончена! Вы накопили ${gameState.totalCashback} кешбека. Начните заново через /start`, "error");
         }
     }
 
