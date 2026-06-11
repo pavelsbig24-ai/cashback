@@ -5,71 +5,222 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Кешбек-авантюрист</title>
     <style>
-        body { font-family: system-ui; background: #f0f2f5; margin: 0; padding: 16px; }
-        .card { background: white; border-radius: 20px; padding: 16px; margin-bottom: 16px; }
-        .balance { font-size: 24px; font-weight: bold; color: #34c759; }
-        .shop { background: #007aff; color: white; border: none; padding: 12px; border-radius: 14px; margin: 8px; width: calc(50% - 16px); cursor: pointer; }
-        .product { border: 1px solid #e9ecef; border-radius: 16px; padding: 12px; margin: 8px 0; display: flex; justify-content: space-between; }
-        button { background: #007aff; color: white; border: none; padding: 10px 16px; border-radius: 12px; cursor: pointer; margin-top: 8px; }
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 16px;
+            color: #1c1c1e;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .balance {
+            font-size: 24px;
+            font-weight: bold;
+            color: #34c759;
+        }
+        .shop {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 14px;
+            font-size: 18px;
+            margin: 8px;
+            width: calc(50% - 16px);
+            cursor: pointer;
+            transition: transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .shop img {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .shop:active { transform: scale(0.97); }
+        .product {
+            background: #f9f9fb;
+            border-radius: 16px;
+            padding: 12px;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .product img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+        .product-info {
+            flex: 1;
+        }
+        button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        button:active { transform: scale(0.97); }
         button.danger { background: #ff3b30; }
+        .message-area {
+            background: #e9ecef;
+            padding: 12px;
+            border-radius: 12px;
+            margin: 12px 0;
+            font-weight: 500;
+            border-left: 4px solid #ffcc00;
+        }
+        /* Анимация карты */
+        .card-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 220px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            z-index: 1000;
+            animation: fadeOut 1s ease-out forwards;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-animation img {
+            width: 180px;
+            border-radius: 12px;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.8); }
+            70% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1); visibility: hidden; }
+        }
     </style>
 </head>
 <body>
-<div class="card">
-    <div>💰 Баланс:</div>
-    <div class="balance" id="balance">1000</div>
-    <div>🏆 Кешбек:</div>
-    <div class="balance" id="cashback">0</div>
-</div>
-
-<div class="card">
-    <div>🏪 Магазины:</div>
-    <div id="shops">
-        <button class="shop" data-shop="supermarket">Супермаркет</button>
-        <button class="shop" data-shop="electronics">Техника</button>
-        <button class="shop" data-shop="clothes">Одежда</button>
+<div class="container">
+    <div class="card">
+        <div>💰 Баланс:</div>
+        <div class="balance" id="balance">1500</div>
+        <div>🏆 Кешбек накоплено:</div>
+        <div class="balance" id="cashback">0</div>
     </div>
-</div>
 
-<div class="card" id="productsPanel" style="display:none;">
-    <div>📦 Товары в <span id="currentShop"></span>:</div>
-    <div id="productsList"></div>
-    <div>💰 Доступно: <span id="remainingBudget">0</span></div>
-    <button id="confirmPurchase">✅ Совершить покупку</button>
-    <button id="cancelShop" class="danger">↩️ Вернуться</button>
+    <div class="card">
+        <div>🏪 Магазины:</div>
+        <div id="shops">
+            <button class="shop" data-shop="supermarket">🛒 Супермаркет</button>
+            <button class="shop" data-shop="electronics">💻 Техника</button>
+            <button class="shop" data-shop="clothes">👕 Одежда</button>
+            <button class="shop" data-shop="dns">📱 ДНС <img src="dnnshop.jpg" alt="DNS"></button>
+        </div>
+    </div>
+
+    <div class="card" id="productsPanel" style="display:none;">
+        <div>📦 Товары в <span id="currentShop"></span>:</div>
+        <div id="productsList"></div>
+        <div>💰 Доступно: <span id="remainingBudget">0</span></div>
+        <button id="confirmPurchase">💳 Совершить покупку</button>
+        <button id="cancelShop" class="danger">↩️ Вернуться</button>
+    </div>
+
+    <div id="commentArea" class="message-area" style="display:none;"></div>
 </div>
 
 <script>
     let gameState = {
-        balance: 1000,
+        balance: 1500,
         totalCashback: 0,
         selectedShop: null,
         chosenProducts: [],
-        shopBan: { supermarket: 0, electronics: 0, clothes: 0 }
+        shopBan: { supermarket: 0, electronics: 0, clothes: 0, dns: 0 }
+    };
+
+    // Список комментариев продавцов (влияют на риск)
+    const comments = {
+        suspicious: [
+            "🤨 Продавец прищурился: «Часто ты тут ходишь, странный какой-то...»",
+            "😒 «Опять отмена? Что-то тут нечисто», — пробурчал кассир.",
+            "👮 Охранник заметил тебя и сделал пометку в блокнот."
+        ],
+        normal: [
+            "🙂 «Спасибо за покупку! Заходите ещё», — улыбнулся продавец.",
+            "😐 «Оплата прошла, чек на почту?» — без эмоций.",
+            "👍 «Ваш кешбек начислен», — сказал робот."
+        ],
+        dns_special: [
+            "🧑‍💻 «iPhone 15 Pro — отличный выбор! Только не отменяй потом», — предупредил консультант.",
+            "📱 «Гарантию не забудьте активировать», — хихикнул продавец."
+        ]
     };
 
     const shopProducts = {
         supermarket: [
-            { id: 1, name: "Хлеб", price: 50 },
-            { id: 2, name: "Молоко", price: 80 },
-            { id: 3, name: "Сыр", price: 150 },
-            { id: 4, name: "Колбаса", price: 300 }
+            { id: 1, name: "Хлеб", price: 50, img: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
+            { id: 2, name: "Молоко", price: 80, img: "https://cdn-icons-png.flaticon.com/512/3774/3774297.png" },
+            { id: 3, name: "Сыр", price: 150, img: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
+            { id: 4, name: "Колбаса", price: 300, img: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" }
         ],
         electronics: [
-            { id: 1, name: "Наушники", price: 600 },
-            { id: 2, name: "Клавиатура", price: 900 },
-            { id: 3, name: "Мышь", price: 400 }
+            { id: 1, name: "Наушники", price: 600, img: "https://cdn-icons-png.flaticon.com/512/2584/2584627.png" },
+            { id: 2, name: "Клавиатура", price: 900, img: "https://cdn-icons-png.flaticon.com/512/2584/2584603.png" },
+            { id: 3, name: "Мышь", price: 400, img: "https://cdn-icons-png.flaticon.com/512/2584/2584610.png" }
         ],
         clothes: [
-            { id: 1, name: "Футболка", price: 500 },
-            { id: 2, name: "Джинсы", price: 1200 },
-            { id: 3, name: "Кепка", price: 300 }
+            { id: 1, name: "Футболка", price: 500, img: "https://cdn-icons-png.flaticon.com/512/3048/3048561.png" },
+            { id: 2, name: "Джинсы", price: 1200, img: "https://cdn-icons-png.flaticon.com/512/3048/3048574.png" },
+            { id: 3, name: "Кепка", price: 300, img: "https://cdn-icons-png.flaticon.com/512/3048/3048566.png" }
+        ],
+        dns: [
+            { id: 1, name: "iPhone 15 Pro", price: 1200, img: "iphone15pro.jpg" }
         ]
     };
 
     function updateUI() {
         document.getElementById('balance').innerText = gameState.balance;
         document.getElementById('cashback').innerText = gameState.totalCashback;
+    }
+
+    function showComment(comment) {
+        const commentDiv = document.getElementById('commentArea');
+        commentDiv.innerText = comment;
+        commentDiv.style.display = 'block';
+        setTimeout(() => {
+            commentDiv.style.display = 'none';
+        }, 3000);
+    }
+
+    function animateCard() {
+        const div = document.createElement('div');
+        div.className = 'card-animation';
+        div.innerHTML = `<img src="card.png" alt="card">`;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 1100);
     }
 
     function renderProducts() {
@@ -90,11 +241,14 @@
             const div = document.createElement('div');
             div.className = 'product';
             div.innerHTML = `
-                <label>
-                    <input type="checkbox" value="${prod.id}" ${isChecked ? 'checked' : ''} 
-                    onchange="toggleProduct(${prod.id}, ${prod.price})">
-                    ${prod.name} - ${prod.price} руб.
-                </label>
+                <img src="${prod.img}" alt="${prod.name}" onerror="this.src='https://placehold.co/60x60'">
+                <div class="product-info">
+                    <label>
+                        <input type="checkbox" value="${prod.id}" ${isChecked ? 'checked' : ''} 
+                        onchange="toggleProduct(${prod.id}, ${prod.price})">
+                        ${prod.name} - ${prod.price} руб.
+                    </label>
+                </div>
             `;
             container.appendChild(div);
         }
@@ -122,7 +276,7 @@
 
     function selectShop(shopName) {
         if (gameState.shopBan[shopName] >= 3) {
-            alert(`Вас выгнали из ${shopName}!`);
+            alert(`Вас выгнали из ${shopName} за махинации!`);
             return;
         }
         gameState.selectedShop = shopName;
@@ -133,7 +287,6 @@
     }
 
     function doPurchase() {
-        alert("Кнопка нажата!");  // тест
         if (!gameState.selectedShop) {
             alert("Выберите магазин!");
             return;
@@ -153,29 +306,50 @@
             return;
         }
 
-        // Оплата картой
+        // Анимация карты
+        animateCard();
+
+        // Симуляция оплаты и отмены
         gameState.balance -= totalPrice;
         let cashback = Math.floor(totalPrice * 0.1);
         gameState.totalCashback += cashback;
-        // Отмена покупки — возврат денег
-        gameState.balance += totalPrice;
+        gameState.balance += totalPrice; // отмена
 
-        // Риск
+        // Риск и комментарий
         let risk = 0;
-        if (totalPrice > 500) risk += 0.3;
+        let comment = "";
+
+        if (gameState.selectedShop === "dns" && totalPrice >= 1000) risk += 0.4;
         if (gameState.shopBan[gameState.selectedShop] > 0) risk += 0.2;
+        if (totalPrice > 500) risk += 0.2;
+
+        // Выбираем случайный комментарий
+        if (Math.random() < 0.4) {
+            // Подозрительный
+            const arr = comments.suspicious;
+            comment = arr[Math.floor(Math.random() * arr.length)];
+            risk += 0.3;
+        } else if (gameState.selectedShop === "dns") {
+            const arr = comments.dns_special;
+            comment = arr[Math.floor(Math.random() * arr.length)];
+        } else {
+            const arr = comments.normal;
+            comment = arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        showComment(comment);
+
         if (Math.random() < risk) {
             gameState.shopBan[gameState.selectedShop]++;
             let penalty = Math.floor(totalPrice * 0.5);
             gameState.balance -= penalty;
             if (gameState.balance < 0) gameState.balance = 0;
-            alert(`⚠️ Попался! Штраф ${penalty} руб. Остаток: ${gameState.balance}`);
+            alert(`⚠️ Попался! Штраф ${penalty} руб. Баланс: ${gameState.balance}\n\n${comment}`);
         } else {
-            alert(`✅ Успех! +${cashback} кешбека. Баланс: ${gameState.balance}`);
+            alert(`✅ Успех! +${cashback} кешбека. Баланс: ${gameState.balance}\n\n${comment}`);
         }
 
         updateUI();
-        // Закрыть панель товаров
         gameState.selectedShop = null;
         gameState.chosenProducts = [];
         document.getElementById('productsPanel').style.display = 'none';
@@ -188,7 +362,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.shop').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const shop = e.target.dataset.shop;
+                const shop = btn.getAttribute('data-shop');
                 selectShop(shop);
             });
         });
