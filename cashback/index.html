@@ -11,29 +11,29 @@
         }
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;
+            background: #121212;  /* тёмный фон */
             margin: 0;
             padding: 16px;
-            color: #1c1c1e;
+            color: #e0e0e0;       /* светлый текст */
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
         }
         .card {
-            background: white;
+            background: #1e1e1e;   /* тёмные карточки */
             border-radius: 20px;
             padding: 16px;
             margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .balance {
             font-size: 24px;
             font-weight: bold;
-            color: #34c759;
+            color: #4cd964;        /* зелёный как в iOS */
         }
         .shop {
-            background: #007aff;
+            background: #2c2c2e;
             color: white;
             border: none;
             padding: 12px;
@@ -56,7 +56,7 @@
         }
         .shop:active { transform: scale(0.97); }
         .product {
-            background: #f9f9fb;
+            background: #2c2c2e;
             border-radius: 16px;
             padding: 12px;
             margin: 8px 0;
@@ -74,7 +74,7 @@
             flex: 1;
         }
         button {
-            background: #007aff;
+            background: #0a84ff;
             color: white;
             border: none;
             padding: 12px 20px;
@@ -87,7 +87,7 @@
         button:active { transform: scale(0.97); }
         button.danger { background: #ff3b30; }
         .message-area {
-            background: #e9ecef;
+            background: #1e1e1e;
             padding: 12px;
             border-radius: 12px;
             margin: 12px 0;
@@ -96,39 +96,40 @@
             transition: 0.2s;
         }
         .message-area.success {
-            border-left-color: #34c759;
-            background: #e0f5e6;
+            border-left-color: #4cd964;
+            background: #1e3a2a;
         }
         .message-area.error {
             border-left-color: #ff3b30;
-            background: #ffe6e5;
+            background: #3a1e1e;
         }
         .card-animation {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             color: white;
-            border-radius: 60px;
-            padding: 20px 30px;
-            font-size: 24px;
+            border-radius: 80px;
+            padding: 30px 50px;
+            font-size: 32px;
             font-weight: bold;
             z-index: 1000;
-            animation: fadeOut 0.8s ease-out forwards;
+            animation: fadeOut 1.5s ease-out forwards;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 20px;
             white-space: nowrap;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
         .card-animation img {
-            width: 50px;
+            width: 70px;
             height: auto;
-            border-radius: 8px;
+            border-radius: 12px;
         }
         @keyframes fadeOut {
             0% { opacity: 1; transform: translate(-50%, -50%) scale(0.9); }
-            80% { opacity: 1; }
+            70% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
             100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1); visibility: hidden; }
         }
     </style>
@@ -145,10 +146,10 @@
     <div class="card">
         <div>🏪 Магазины:</div>
         <div id="shops">
-            <button class="shop" data-shop="supermarket">🛒 Супермаркет</button>
-            <button class="shop" data-shop="electronics">💻 Техника</button>
-            <button class="shop" data-shop="clothes">👕 Одежда</button>
-            <button class="shop" data-shop="dns">📱 ДНС <img src="dnsshop.jpg" alt="DNS"></button>
+            <button class="shop" data-shop="supermarket">Супермаркет</button>
+            <button class="shop" data-shop="electronics">Техника</button>
+            <button class="shop" data-shop="clothes">Одежда</button>
+            <button class="shop" data-shop="dns">ДНС <img src="dnsshop.jpg" alt="DNS"></button>
         </div>
     </div>
 
@@ -231,7 +232,7 @@
         div.className = 'card-animation';
         div.innerHTML = '<img src="card.png" alt="card"> 💳 Оплата...';
         document.body.appendChild(div);
-        setTimeout(() => div.remove(), 1000);
+        setTimeout(() => div.remove(), 1500); // дольше на 0.5 сек
     }
 
     function renderProducts() {
