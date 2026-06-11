@@ -4,11 +4,12 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
 from aiohttp import web
+import pathlib
 
 # ========== НАСТРОЙКИ ==========
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 # Адрес, где будет доступен index.html (тот же сервис Render)
-WEBAPP_URL = "https://cashback-prd2.onrender.com/index.html"
+WEBAPP_URL = "https://cashback-prd2.onrender.com"
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -25,25 +26,32 @@ async def cmd_start(message: types.Message):
         reply_markup=keyboard
     )
 
-# ========== ВЕБ-СЕРВЕР ДЛЯ RENDER (чтобы не отключали) ==========
+# ========== ВЕБ-СЕРВЕР ДЛЯ RENDER ==========
+async def handle_index(request):
+    # Отдаём index.html
+    index_path = pathlib.Path(__file__).parent / "index.html"
+    if index_path.exists():
+        return web.FileResponse(index_path)
+    else:
+        return web.Response(text="index.html not found", status=404)
+
 async def handle_health(request):
     return web.Response(text="OK")
 
 async def run_web_server():
     app = web.Application()
-    app.router.add_get("/", handle_health)
+    app.router.add_get("/", handle_index)
+    app.router.add_get("/index.html", handle_index)
     app.router.add_get("/health", handle_health)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", 8080)
     await site.start()
-    print("Веб-сервер для healthcheck запущен на порту 8080")
+    print("Веб-сервер запущен на порту 8080, отдаёт index.html")
 
 # ========== ЗАПУСК ==========
 async def main():
-    # Запускаем веб-сервер (чтобы Render видел порт)
     await run_web_server()
-    # Запускаем бота
     print("Бот запущен и слушает команды...")
     await dp.start_polling(bot)
 
