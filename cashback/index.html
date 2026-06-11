@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Кешбек-авантюрист</title>
+    <style>
+        body { font-family: system-ui; background: #f0f2f5; margin: 0; padding: 16px; }
+        .card { background: white; border-radius: 20px; padding: 16px; margin-bottom: 16px; }
+        .balance { font-size: 24px; font-weight: bold; color: #34c759; }
+        .shop { background: #007aff; color: white; border: none; padding: 12px; border-radius: 14px; margin: 8px; width: calc(50% - 16px); cursor: pointer; }
+        .product { border: 1px solid #e9ecef; border-radius: 16px; padding: 12px; margin: 8px 0; display: flex; justify-content: space-between; }
+        button { background: #007aff; color: white; border: none; padding: 10px 16px; border-radius: 12px; cursor: pointer; margin-top: 8px; }
+        button.danger { background: #ff3b30; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div>💰 Баланс:</div>
+    <div class="balance" id="balance">1000</div>
+    <div>🏆 Кешбек:</div>
+    <div class="balance" id="cashback">0</div>
+</div>
+
+<div class="card">
+    <div>🏪 Магазины:</div>
+    <div id="shops">
+        <button class="shop" data-shop="supermarket">Супермаркет</button>
+        <button class="shop" data-shop="electronics">Техника</button>
+        <button class="shop" data-shop="clothes">Одежда</button>
+    </div>
+</div>
+
+<div class="card" id="productsPanel" style="display:none;">
+    <div>📦 Товары в <span id="currentShop"></span>:</div>
+    <div id="productsList"></div>
+    <div>💰 Доступно: <span id="remainingBudget">0</span></div>
+    <button id="confirmPurchase">✅ Совершить покупку</button>
+    <button id="cancelShop" class="danger">↩️ Вернуться</button>
+</div>
+
+<script>
+    let gameState = {
+        balance: 1000,
+        totalCashback: 0,
+        selectedShop: null,
+        chosenProducts: [],
+        shopBan: { supermarket: 0, electronics: 0, clothes: 0 }
+    };
+
+    const shopProducts = {
+        supermarket: [
+            { id: 1, name: "Хлеб", price: 50 },
+            { id: 2, name: "Молоко", price: 80 },
+            { id: 3, name: "Сыр", price: 150 },
+            { id: 4, name: "Колбаса", price: 300 }
+        ],
+        electronics: [
+            { id: 1, name: "Наушники", price: 600 },
+            { id: 2, name: "Клавиатура", price: 900 },
+            { id: 3, name: "Мышь", price: 400 }
+        ],
+        clothes: [
+            { id: 1, name: "Футболка", price: 500 },
+            { id: 2, name: "Джинсы", price: 1200 },
+            { id: 3, name: "Кепка", price: 300 }
+        ]
+    };
+
+    function updateUI() {
+        document.getElementById('balance').innerText = gameState.balance;
+        document.getElementById('cashback').innerText = gameState.totalCashback;
+    }
+
+    function renderProducts() {
+        if (!gameState.selectedShop) return;
+        const products = shopProducts[gameState.selectedShop];
+        const container = document.getElementById('productsList');
+        container.innerHTML = '';
+        let totalSelected = 0;
+        for (let pid of gameState.chosenProducts) {
+            let p = products.find(pr => pr.id === pid);
+            if (p) totalSelected += p.price;
+        }
+        const remaining = gameState.balance - totalSelected;
+        document.getElementById('remainingBudget').innerText = remaining;
+
+        for (let prod of products) {
+            const isChecked = gameState.chosenProducts.includes(prod.id);
+            const div = document.createElement('div');
+            div.className = 'product';
+            div.innerHTML = `
+                <label>
+                    <input type="checkbox" value="${prod.id}" ${isChecked ? 'checked' : ''} 
+                    onchange="toggleProduct(${prod.id}, ${prod.price})">
+                    ${prod.name} - ${prod.price} руб.
+                </label>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    window.toggleProduct = function(productId, price) {
+        let total = 0;
+        for (let pid of gameState.chosenProducts) {
+            let p = shopProducts[gameState.selectedShop].find(pr => pr.id === pid);
+            if (p) total += p.price;
+        }
+        if (gameState.chosenProducts.includes(productId)) {
+            gameState.chosenProducts = gameState.chosenProducts.filter(pid => pid !== productId);
+        } else {
+            if (total + price <= gameState.balance) {
+                gameState.chosenProducts.push(productId);
+            } else {
+                alert("Недостаточно средств!");
+                renderProducts();
+                return;
+            }
+        }
+        renderProducts();
+    };
+
+    function selectShop(shopName) {
+        if (gameState.shopBan[shopName] >= 3) {
+            alert(`Вас выгнали из ${shopName}!`);
+            return;
+        }
+        gameState.selectedShop = shopName;
+        gameState.chosenProducts = [];
+        document.getElementById('currentShop').innerText = shopName;
+        document.getElementById('productsPanel').style.display = 'block';
+        renderProducts();
+    }
+
+    function doPurchase() {
+        alert("Кнопка нажата!");  // тест
+        if (!gameState.selectedShop) {
+            alert("Выберите магазин!");
+            return;
+        }
+        const products = shopProducts[gameState.selectedShop];
+        let totalPrice = 0;
+        for (let pid of gameState.chosenProducts) {
+            let p = products.find(pr => pr.id === pid);
+            if (p) totalPrice += p.price;
+        }
+        if (totalPrice === 0) {
+            alert("Выберите товары!");
+            return;
+        }
+        if (totalPrice > gameState.balance) {
+            alert("Не хватает денег!");
+            return;
+        }
+
+        // Оплата картой
+        gameState.balance -= totalPrice;
+        let cashback = Math.floor(totalPrice * 0.1);
+        gameState.totalCashback += cashback;
+        // Отмена покупки — возврат денег
+        gameState.balance += totalPrice;
+
+        // Риск
+        let risk = 0;
+        if (totalPrice > 500) risk += 0.3;
+        if (gameState.shopBan[gameState.selectedShop] > 0) risk += 0.2;
+        if (Math.random() < risk) {
+            gameState.shopBan[gameState.selectedShop]++;
+            let penalty = Math.floor(totalPrice * 0.5);
+            gameState.balance -= penalty;
+            if (gameState.balance < 0) gameState.balance = 0;
+            alert(`⚠️ Попался! Штраф ${penalty} руб. Остаток: ${gameState.balance}`);
+        } else {
+            alert(`✅ Успех! +${cashback} кешбека. Баланс: ${gameState.balance}`);
+        }
+
+        updateUI();
+        // Закрыть панель товаров
+        gameState.selectedShop = null;
+        gameState.chosenProducts = [];
+        document.getElementById('productsPanel').style.display = 'none';
+
+        if (gameState.balance <= 0) {
+            alert(`Игра окончена! Кешбек: ${gameState.totalCashback}`);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.shop').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const shop = e.target.dataset.shop;
+                selectShop(shop);
+            });
+        });
+        document.getElementById('confirmPurchase').addEventListener('click', doPurchase);
+        document.getElementById('cancelShop').addEventListener('click', () => {
+            gameState.selectedShop = null;
+            gameState.chosenProducts = [];
+            document.getElementById('productsPanel').style.display = 'none';
+        });
+        updateUI();
+    });
+</script>
+</body>
+</html>
