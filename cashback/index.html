@@ -3,38 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Кешбек-авантюрист</title>
+    <title>Кешбек-авантюрист — тёмная сторона</title>
     <style>
         * {
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
         }
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: #121212;  /* тёмный фон */
+            background: #000000;
             margin: 0;
             padding: 16px;
-            color: #e0e0e0;       /* светлый текст */
+            color: #e0e0e0;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
         }
         .card {
-            background: #1e1e1e;   /* тёмные карточки */
+            background: #1e1e1e;
             border-radius: 20px;
             padding: 16px;
             margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            border: 1px solid #2c2c2c;
         }
-        .balance {
-            font-size: 24px;
+        .balance, .cashback {
+            font-size: 28px;
             font-weight: bold;
-            color: #4cd964;        /* зелёный как в iOS */
+            color: #4cd964;
         }
         .shop {
             background: #2c2c2e;
-            color: white;
+            color: #ffffff;
             border: none;
             padding: 12px;
             border-radius: 14px;
@@ -51,7 +53,7 @@
         .shop img {
             width: 28px;
             height: 28px;
-            border-radius: 8px;
+            border-radius: 6px;
             object-fit: cover;
         }
         .shop:active { transform: scale(0.97); }
@@ -69,6 +71,7 @@
             height: 60px;
             object-fit: contain;
             border-radius: 12px;
+            background: #000;
         }
         .product-info {
             flex: 1;
@@ -83,54 +86,79 @@
             font-weight: 600;
             cursor: pointer;
             transition: 0.1s;
+            margin: 4px;
         }
         button:active { transform: scale(0.97); }
-        button.danger { background: #ff3b30; }
+        button.danger { background: #ff453a; }
+        button.success { background: #32d74b; }
+        button.info { background: #5e5ce6; }
         .message-area {
-            background: #1e1e1e;
+            background: #2c2c2e;
             padding: 12px;
             border-radius: 12px;
             margin: 12px 0;
             font-weight: 500;
             border-left: 4px solid #ffcc00;
-            transition: 0.2s;
         }
-        .message-area.success {
-            border-left-color: #4cd964;
-            background: #1e3a2a;
-        }
-        .message-area.error {
-            border-left-color: #ff3b30;
-            background: #3a1e1e;
-        }
+        .message-area.success { border-left-color: #32d74b; background: #1e3a2e; color: #b0ffb0; }
+        .message-area.error { border-left-color: #ff453a; background: #3a1e1e; color: #ffb0b0; }
         .card-animation {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            color: white;
+            background: #000000cc;
+            backdrop-filter: blur(8px);
             border-radius: 80px;
-            padding: 30px 50px;
-            font-size: 32px;
+            padding: 24px 40px;
+            font-size: 28px;
             font-weight: bold;
             z-index: 1000;
             animation: fadeOut 1.5s ease-out forwards;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
             white-space: nowrap;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            border: 1px solid gold;
         }
         .card-animation img {
-            width: 70px;
+            width: 80px;
             height: auto;
             border-radius: 12px;
         }
         @keyframes fadeOut {
             0% { opacity: 1; transform: translate(-50%, -50%) scale(0.9); }
-            70% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1); visibility: hidden; }
+            70% { opacity: 1; }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); visibility: hidden; }
+        }
+        .info-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2c2c2e;
+            border-radius: 50px;
+            padding: 8px 16px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 200;
+            box-shadow: 0 2px 8px black;
+        }
+        .timer {
+            font-size: 16px;
+            background: #000;
+            padding: 6px 12px;
+            border-radius: 40px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        .upgrade-shop {
+            background: #1a1a1a;
+            padding: 12px;
+            border-radius: 16px;
+            margin-top: 12px;
+        }
+        hr {
+            border-color: #333;
         }
     </style>
 </head>
@@ -140,16 +168,17 @@
         <div>💰 Баланс:</div>
         <div class="balance" id="balance">1500</div>
         <div>🏆 Кешбек накоплено:</div>
-        <div class="balance" id="cashback">0</div>
+        <div class="cashback" id="cashback">0</div>
+        <div class="timer">⏱️ Следующая выплата кешбека: <span id="timer">5:00</span></div>
     </div>
 
     <div class="card">
         <div>🏪 Магазины:</div>
         <div id="shops">
-            <button class="shop" data-shop="supermarket">Супермаркет</button>
-            <button class="shop" data-shop="electronics">Техника</button>
-            <button class="shop" data-shop="clothes">Одежда</button>
-            <button class="shop" data-shop="dns">ДНС <img src="dnsshop.jpg" alt="DNS"></button>
+            <button class="shop" data-shop="supermarket">🛒 Супермаркет</button>
+            <button class="shop" data-shop="electronics">💻 Техника</button>
+            <button class="shop" data-shop="clothes">👕 Одежда</button>
+            <button class="shop" data-shop="dns">📱 ДНС <img src="dnsshop.jpg" alt="DNS"></button>
         </div>
     </div>
 
@@ -161,35 +190,119 @@
         <button id="cancelShop" class="danger">↩️ Вернуться</button>
     </div>
 
+    <div class="card" id="upgradesPanel">
+        <div>🔧 Магазин улучшений</div>
+        <div id="upgradesList"></div>
+        <button id="showUpgrades" class="info">Показать улучшения</button>
+    </div>
+
     <div id="commentArea" class="message-area" style="display:none;"></div>
 </div>
 
+<div class="info-icon" id="infoBtn">ℹ️</div>
+
 <script>
+    // --- Загрузка / сохранение в localStorage ---
     let gameState = {
         balance: 1500,
         totalCashback: 0,
         selectedShop: null,
         chosenProducts: [],
-        shopBan: { supermarket: 0, electronics: 0, clothes: 0, dns: 0 }
+        shopBan: { supermarket: 0, electronics: 0, clothes: 0, dns: 0 },
+        upgrades: {
+            cashbackPercent: 10,     // базовый 10%
+            riskReduction: 0,        // уменьшение риска в процентах (0-50)
+            timerReduction: 0        // сокращение таймера в секундах (макс 120)
+        },
+        lastCreditTime: 0,           // время последнего кредита
+        bankDebt: 0                  // долг (не реализован, но можно потом)
     };
 
+    // Константы
+    const BASE_CASHBACK_PERCENT = 10;
+    const BASE_TIMER_SEC = 300; // 5 минут
+    let timerInterval = null;
+    let nextEarnSeconds = BASE_TIMER_SEC - gameState.upgrades.timerReduction;
+
+    // Загружаем сохранения
+    function loadGame() {
+        const saved = localStorage.getItem('cashbackGame');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                gameState.balance = data.balance;
+                gameState.totalCashback = data.totalCashback;
+                gameState.shopBan = data.shopBan || { supermarket: 0, electronics: 0, clothes: 0, dns: 0 };
+                gameState.upgrades = data.upgrades || { cashbackPercent: 10, riskReduction: 0, timerReduction: 0 };
+                gameState.lastCreditTime = data.lastCreditTime || 0;
+            } catch(e) { console.warn(e); }
+        }
+        updateUI();
+        restartTimer();
+    }
+
+    function saveGame() {
+        const toSave = {
+            balance: gameState.balance,
+            totalCashback: gameState.totalCashback,
+            shopBan: gameState.shopBan,
+            upgrades: gameState.upgrades,
+            lastCreditTime: gameState.lastCreditTime
+        };
+        localStorage.setItem('cashbackGame', JSON.stringify(toSave));
+    }
+
+    // Таймер начисления кешбека
+    function restartTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        let secondsLeft = BASE_TIMER_SEC - gameState.upgrades.timerReduction;
+        if (secondsLeft < 30) secondsLeft = 30;
+        nextEarnSeconds = secondsLeft;
+        updateTimerDisplay(secondsLeft);
+        timerInterval = setInterval(() => {
+            if (nextEarnSeconds <= 1) {
+                // Начисляем кешбек: 5% от текущего общего кешбека (но не менее 10)
+                let earn = Math.max(10, Math.floor(gameState.totalCashback * 0.05));
+                gameState.balance += earn;
+                gameState.totalCashback += earn; // добавляем к общему, но логика: начисляем на баланс, копим статистику
+                showMessage(`💰 Пассивный доход: +${earn} руб. (кешбек капает)`, "success");
+                updateUI();
+                saveGame();
+                nextEarnSeconds = BASE_TIMER_SEC - gameState.upgrades.timerReduction;
+                if (nextEarnSeconds < 30) nextEarnSeconds = 30;
+                updateTimerDisplay(nextEarnSeconds);
+            } else {
+                nextEarnSeconds--;
+                updateTimerDisplay(nextEarnSeconds);
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay(sec) {
+        const mins = Math.floor(sec / 60);
+        const secs = sec % 60;
+        document.getElementById('timer').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    // Комментарии
     const comments = {
         suspicious: [
-            "🤨 Продавец прищурился: «Часто ты тут ходишь, странный какой-то...»",
-            "😒 «Опять отмена? Что-то тут нечисто», — пробурчал кассир.",
-            "👮 Охранник заметил тебя и сделал пометку в блокнот."
+            "🤨 Продавец прищурился: «Часто ты тут ходишь...»",
+            "😒 «Опять отмена? Странно», — кассир.",
+            "👮 Охранник сделал пометку."
         ],
         normal: [
-            "🙂 «Спасибо за покупку! Заходите ещё», — улыбнулся продавец.",
-            "😐 «Оплата прошла, чек на почту?» — без эмоций.",
-            "👍 «Ваш кешбек начислен», — сказал робот."
+            "🙂 «Спасибо за покупку! Заходите»",
+            "😐 «Оплата прошла, чек на почту»",
+            "👍 «Кешбек начислен»"
         ],
         dns_special: [
-            "🧑‍💻 «iPhone 15 Pro — отличный выбор! Только не отменяй потом», — предупредил консультант.",
-            "📱 «Гарантию не забудьте активировать», — хихикнул продавец."
+            "🧑‍💻 «iPhone отличный! Только не отменяй»",
+            "📱 «Гарантию активируйте»"
         ]
     };
 
+    // Товары (без лишних эмодзи, только картинки)
     const shopProducts = {
         supermarket: [
             { id: 1, name: "Хлеб", price: 50, img: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
@@ -212,9 +325,70 @@
         ]
     };
 
+    // Улучшения
+    const upgradesList = [
+        { id: 'cb', name: '➕ Кешбек +1%', price: 500, effect: () => { gameState.upgrades.cashbackPercent += 1; }, check: () => gameState.upgrades.cashbackPercent < 30, getVal: () => `${gameState.upgrades.cashbackPercent}%` },
+        { id: 'risk', name: '🛡️ Снижение риска -5%', price: 400, effect: () => { gameState.upgrades.riskReduction += 5; }, check: () => gameState.upgrades.riskReduction < 50, getVal: () => `${gameState.upgrades.riskReduction}%` },
+        { id: 'timer', name: '⚡ Ускорение таймера -15 сек', price: 600, effect: () => { gameState.upgrades.timerReduction += 15; restartTimer(); }, check: () => gameState.upgrades.timerReduction < 120, getVal: () => `-${gameState.upgrades.timerReduction} сек` }
+    ];
+
+    function renderUpgrades() {
+        const container = document.getElementById('upgradesList');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let up of upgradesList) {
+            const btn = document.createElement('button');
+            btn.innerText = `${up.name} (${up.price} руб.) | Текущий: ${up.getVal()}`;
+            btn.onclick = () => {
+                if (gameState.balance >= up.price && up.check()) {
+                    gameState.balance -= up.price;
+                    up.effect();
+                    saveGame();
+                    updateUI();
+                    renderUpgrades();
+                    showMessage(`Улучшение "${up.name}" куплено!`, "success");
+                } else {
+                    showMessage(`Не хватает денег или уже максимум`, "error");
+                }
+            };
+            container.appendChild(btn);
+        }
+    }
+
+    // Кредитка Т-банка
+    function tryCredit() {
+        const now = Date.now();
+        const oneHour = 3600000;
+        if (gameState.balance <= 0 && (now - gameState.lastCreditTime > oneHour)) {
+            gameState.balance += 500;
+            gameState.lastCreditTime = now;
+            saveGame();
+            updateUI();
+            showMessage("💳 Вы активировали кредитную карту Т-банка +500 руб. (доступ раз в час)", "success");
+        } else if (gameState.balance > 0) {
+            showMessage("У вас есть деньги, кредит не нужен", "error");
+        } else {
+            showMessage("Кредит можно брать раз в час", "error");
+        }
+    }
+
+    // Основные функции игры
     function updateUI() {
         document.getElementById('balance').innerText = gameState.balance;
         document.getElementById('cashback').innerText = gameState.totalCashback;
+        // Если баланс = 0, показываем кнопку кредита
+        let creditBtn = document.getElementById('creditBtn');
+        if (!creditBtn) {
+            const btn = document.createElement('button');
+            btn.id = 'creditBtn';
+            btn.innerText = '💳 Взять кредит 500₽ (Т-банк)';
+            btn.className = 'success';
+            btn.onclick = tryCredit;
+            document.querySelector('.card').appendChild(btn);
+        } else {
+            creditBtn.style.display = gameState.balance <= 0 ? 'block' : 'none';
+        }
+        saveGame();
     }
 
     function showMessage(text, type = 'info') {
@@ -232,7 +406,7 @@
         div.className = 'card-animation';
         div.innerHTML = '<img src="card.png" alt="card"> 💳 Оплата...';
         document.body.appendChild(div);
-        setTimeout(() => div.remove(), 1500); // дольше на 0.5 сек
+        setTimeout(() => div.remove(), 1500);
     }
 
     function renderProducts() {
@@ -253,7 +427,7 @@
             const div = document.createElement('div');
             div.className = 'product';
             div.innerHTML = `
-                <img src="${prod.img}" alt="${prod.name}" onerror="this.src='https://placehold.co/60x60?text=📱'">
+                <img src="${prod.img}" alt="${prod.name}" onerror="this.src='https://placehold.co/60x60?text=📦'">
                 <div class="product-info">
                     <label>
                         <input type="checkbox" value="${prod.id}" ${isChecked ? 'checked' : ''} 
@@ -288,7 +462,7 @@
 
     function selectShop(shopName) {
         if (gameState.shopBan[shopName] >= 3) {
-            showMessage(`🚫 Вас выгнали из ${shopName} за махинации!`, "error");
+            showMessage(`🚫 Вас выгнали из ${shopName}!`, "error");
             return;
         }
         gameState.selectedShop = shopName;
@@ -300,7 +474,7 @@
 
     function doPurchase() {
         if (!gameState.selectedShop) {
-            showMessage("Сначала выберите магазин!", "error");
+            showMessage("Выберите магазин!", "error");
             return;
         }
         const products = shopProducts[gameState.selectedShop];
@@ -310,32 +484,32 @@
             if (p) totalPrice += p.price;
         }
         if (totalPrice === 0) {
-            showMessage("Выберите хотя бы один товар!", "error");
+            showMessage("Выберите товары!", "error");
             return;
         }
         if (totalPrice > gameState.balance) {
-            showMessage("Не хватает денег на балансе!", "error");
+            showMessage("Не хватает денег!", "error");
             return;
         }
 
         animateCard();
 
         gameState.balance -= totalPrice;
-        let cashback = Math.floor(totalPrice * 0.1);
+        let cashbackPercent = gameState.upgrades.cashbackPercent;
+        let cashback = Math.floor(totalPrice * cashbackPercent / 100);
         gameState.totalCashback += cashback;
-        gameState.balance += totalPrice;
+        gameState.balance += totalPrice; // отмена
 
-        let risk = 0;
+        let risk = 0.2 + (totalPrice > 500 ? 0.2 : 0) + (gameState.shopBan[gameState.selectedShop] > 0 ? 0.2 : 0);
+        if (gameState.selectedShop === "dns" && totalPrice >= 1000) risk += 0.3;
+        risk -= (gameState.upgrades.riskReduction / 100);
+        risk = Math.min(0.9, Math.max(0.1, risk));
+
         let comment = "";
-
-        if (gameState.selectedShop === "dns" && totalPrice >= 1000) risk += 0.4;
-        if (gameState.shopBan[gameState.selectedShop] > 0) risk += 0.2;
-        if (totalPrice > 500) risk += 0.2;
-
         if (Math.random() < 0.4) {
             const arr = comments.suspicious;
             comment = arr[Math.floor(Math.random() * arr.length)];
-            risk += 0.3;
+            risk += 0.2;
         } else if (gameState.selectedShop === "dns") {
             const arr = comments.dns_special;
             comment = arr[Math.floor(Math.random() * arr.length)];
@@ -343,7 +517,6 @@
             const arr = comments.normal;
             comment = arr[Math.floor(Math.random() * arr.length)];
         }
-
         showMessage(comment, "info");
 
         if (Math.random() < risk) {
@@ -351,22 +524,30 @@
             let penalty = Math.floor(totalPrice * 0.5);
             gameState.balance -= penalty;
             if (gameState.balance < 0) gameState.balance = 0;
-            showMessage(`⚠️ Попался! Штраф ${penalty} руб. Остаток: ${gameState.balance} руб.`, "error");
+            showMessage(`⚠️ Попался! Штраф ${penalty} руб. Остаток: ${gameState.balance}`, "error");
         } else {
-            showMessage(`✅ Успех! +${cashback} кешбека. Баланс: ${gameState.balance} руб.`, "success");
+            showMessage(`✅ Успех! +${cashback} кешбека. Баланс: ${gameState.balance}`, "success");
         }
 
         updateUI();
         gameState.selectedShop = null;
         gameState.chosenProducts = [];
         document.getElementById('productsPanel').style.display = 'none';
+        saveGame();
 
         if (gameState.balance <= 0) {
-            showMessage(`💀 Игра окончена! Вы накопили ${gameState.totalCashback} кешбека. Начните заново через /start`, "error");
+            showMessage(`💀 Игра не закончена! Используй кредитку Т-банка, чтобы продолжить.`, "error");
         }
     }
 
+    // Информация
+    function showInfo() {
+        alert("🧾 Кешбек-авантюрист\n\nЦель: накопить кешбек, обманывая магазины.\nРиск зависит от суммы и прошлых нарушений.\nКаждые 5 минут начисляется 5% от накопленного кешбека.\nМагазин улучшений помогает повысить кешбек и снизить риск.\nПри нуле баланса можно взять кредит Т-банка (раз в час).\n\nАвтор: твой Telegram-бот @cashback78bot");
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+        loadGame();
+        renderUpgrades();
         document.querySelectorAll('.shop').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const shop = btn.getAttribute('data-shop');
@@ -379,6 +560,10 @@
             gameState.chosenProducts = [];
             document.getElementById('productsPanel').style.display = 'none';
         });
+        document.getElementById('showUpgrades').addEventListener('click', () => {
+            renderUpgrades();
+        });
+        document.getElementById('infoBtn').addEventListener('click', showInfo);
         updateUI();
     });
 </script>
